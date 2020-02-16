@@ -17,7 +17,6 @@ jobs:
     executor: twistcli/default
     steps:
       - checkout
-#      - run: 'docker build -t $MYREPO/$MYIMAGE:$TAG .'
       - attach_workspace:
           at: workspace
       - run:
