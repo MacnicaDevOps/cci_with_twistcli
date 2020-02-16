@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   twistcli: twistlock/twistcli-scan@1.0.5
 jobs:
-  docker-build-and-save:
+  docker-build:
     executor: twistcli/default
     steps:
       - checkout
@@ -28,10 +28,10 @@ jobs:
 workflows:
   scan-image:
     jobs:
-      - docker-build-and-save
+      - docker-build
       - twistcli/scan-image:
           requires:
-            - docker-build-and-save
+            - docker-build
           context: tl_scan_context
           image: '$MYREPO/$MYIMAGE:$TAG'
           image-tar: image.tar
