@@ -17,10 +17,13 @@ jobs:
     executor: twistcli/default
     steps:
       - checkout
-      - run: 'docker build -t $MYREPO/$MYIMAGE:$TAG .'
+#      - run: 'docker build -t $MYREPO/$MYIMAGE:$TAG .'
+      - attach_wordspace:
+          at: workspace
       - run:
           name: Push Image
           command: |
+            docker load -i workspace/image.tar
             echo $DOCKER_PW | docker login --username $DOCKER_USER --password-stdin docker.io
             docker push docker.io/$MYREPO/$MYIMAGE:$TAG
 workflows:
