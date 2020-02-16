@@ -22,6 +22,7 @@ jobs:
       - run:
           name: Scan
           command: |
+            TAG='01'
             docker load -i workspace/image.tar
             curl -k -u $TL_USER:$TL_PW --output ./twistcli $TL_CONSOLE/api/v1/util/twistcli
             chmod a+x ./twistcli
