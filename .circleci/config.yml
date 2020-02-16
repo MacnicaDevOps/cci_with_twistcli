@@ -32,7 +32,7 @@ jobs:
 workflows:
   Build-Scan-Push:
     jobs:
-      - docker-build:
+      - docker-build
       - scan-image:
           requires:
             - docker-build
