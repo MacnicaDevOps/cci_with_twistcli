@@ -13,6 +13,10 @@ jobs:
             docker build --no-cache -t $MYREPO/$MYIMAGE:$TAG .
             mkdir -p workspace
             docker save $MYREPO/$MYIMAGE:$TAG -o workspace/image.tar
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - image.tar
   scan-image:
     docker:
       - image: circleci/node:10.19.0-stretch
