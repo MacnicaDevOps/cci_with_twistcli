@@ -30,9 +30,9 @@ jobs:
           command: |
             TAG='01'
             docker load -i workspace/image.tar
-            curl -k -u $TL_USER:$TL_PW --output ./twistcli $TL_CONSOLE_URL/api/v1/util/twistcli
+            curl -k -u $TL_USER:$TL_PASS --output ./twistcli $TL_CONSOLE_URL/api/v1/util/twistcli
             chmod a+x ./twistcli
-            ./twistcli images scan --details -address $TL_CONSOLE -u $TL_USER -p $TL_PW --vulnerability-threshold high --compliance-threshold high --only-fixed $MYREPO/$MYIMAGE:$TAG	
+            ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS --vulnerability-threshold high --compliance-threshold high --only-fixed $MYREPO/$MYIMAGE:$TAG	
             echo $DOCKER_PW | docker login --username $DOCKER_USER --password-stdin docker.io
             docker push docker.io/$MYREPO/$MYIMAGE:$TAG
 workflows:
