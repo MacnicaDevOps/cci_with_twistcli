@@ -40,5 +40,6 @@ workflows:
       - scan-image:
           requires:
             - docker-build
-          context: tl_scan_context
-          context: docker_context
+          context: 
+            - tl_scan_context
+            - docker_context
