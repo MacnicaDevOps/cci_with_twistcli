@@ -1,43 +1,45 @@
-version: 2.1
-orbs:
-  twistcli: twistlock/twistcli-scan@1.0.5
+version: 2.1	
 jobs:
   docker-build:
-    executor: twistcli/default
+    docker:
+      - image: circleci/node:10.19.0-stretch
     steps:
       - checkout
-      - run: 'docker build -t $MYREPO/$MYIMAGE:$TAG .'
-      - run: mkdir -p workspace
-      - run: 'docker save $MYREPO/$MYIMAGE:$TAG -o workspace/image.tar'
+      - setup_remote_docker
+      - run:
+          name: Build
+          command: |
+            TAG='01'
+            docker build --no-cache -t $MYREPO/$MYIMAGE:$TAG .
+            mkdir -p workspace
+            docker save $MYREPO/$MYIMAGE:$TAG -o workspace/image.tar
       - persist_to_workspace:
           root: workspace
           paths:
             - image.tar
-  docker-push:
-    executor: twistcli/default
+  scan-image:
+    docker:
+      - image: circleci/node:10.19.0-stretch
     steps:
       - checkout
+      - setup_remote_docker
       - attach_workspace:
           at: workspace
       - run:
-          name: Push Image
+          name: Scan
           command: |
+            TAG='01'
             docker load -i workspace/image.tar
+            curl -k -u $TL_USER:$TL_PASS --output ./twistcli $TL_CONSOLE_URL/api/v1/util/twistcli
+            chmod a+x ./twistcli
+            ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS --vulnerability-threshold high --compliance-threshold high --only-fixed $MYREPO/$MYIMAGE:$TAG	
             echo $DOCKER_PW | docker login --username $DOCKER_USER --password-stdin docker.io
             docker push docker.io/$MYREPO/$MYIMAGE:$TAG
 workflows:
-  scan-image:
+  Build-Scan-Push:
     jobs:
       - docker-build
-      - twistcli/scan-image:
+      - scan-image:
           requires:
             - docker-build
           context: tl_scan_context
-          image: '$MYREPO/$MYIMAGE:$TAG'
-          image-tar: image.tar
-          vuln-thresh: high
-          comp-thresh: critical
-          only-fixed: true
-      - docker-push:
-          requires:
-            - twistcli/scan-image
