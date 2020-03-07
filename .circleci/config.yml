@@ -1,45 +1,43 @@
-version: 2.1	
+version: 2.1
+orbs:
+  twistcli: twistlock/twistcli-scan@1.0.5
 jobs:
   docker-build:
-    docker:
-      - image: circleci/node:10.19.0-stretch
+    executor: twistcli/default
     steps:
       - checkout
-      - setup_remote_docker
-      - run:
-          name: Build
-          command: |
-            TAG='01'
-            docker build --no-cache -t $MYREPO/$MYIMAGE:$TAG .
-            mkdir -p workspace
-            docker save $MYREPO/$MYIMAGE:$TAG -o workspace/image.tar
+      - run: 'docker build -t $MYREPO/$MYIMAGE:$TAG .'
+      - run: mkdir -p workspace
+      - run: 'docker save $MYREPO/$MYIMAGE:$TAG -o workspace/image.tar'
       - persist_to_workspace:
           root: workspace
           paths:
             - image.tar
-  scan-image:
-    docker:
-      - image: circleci/node:10.19.0-stretch
+  docker-push:
+    executor: twistcli/default
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           at: workspace
       - run:
-          name: Scan
+          name: Push Image
           command: |
-            TAG='01'
             docker load -i workspace/image.tar
-            curl -k -u $TL_USER:$TL_PW --output ./twistcli $TL_CONSOLE/api/v1/util/twistcli
-            chmod a+x ./twistcli
-            ./twistcli images scan --details -address $TL_CONSOLE -u $TL_USER -p $TL_PW --vulnerability-threshold high --compliance-threshold high --only-fixed $MYREPO/$MYIMAGE:$TAG	
             echo $DOCKER_PW | docker login --username $DOCKER_USER --password-stdin docker.io
             docker push docker.io/$MYREPO/$MYIMAGE:$TAG
 workflows:
-  Build-Scan-Push:
+  scan-image:
     jobs:
       - docker-build
-      - scan-image:
+      - twistcli/scan-image:
           requires:
             - docker-build
           context: tl_scan_context
+          image: '$MYREPO/$MYIMAGE:$TAG'
+          image-tar: image.tar
+          vuln-thresh: high
+          comp-thresh: critical
+          only-fixed: true
+      - docker-push:
+          requires:
+            - twistcli/scan-image
