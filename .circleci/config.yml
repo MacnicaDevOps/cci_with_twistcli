@@ -18,11 +18,9 @@ jobs:
           paths:
             - image.tar
   scan-image:
-    docker:
-      - image: circleci/node:10.19.0-stretch
+    machine: true
     steps:
       - checkout
-      - setup_remote_docker
       - attach_workspace:
           at: workspace
       - run:
