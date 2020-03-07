@@ -23,12 +23,6 @@ jobs:
           name: Push Image
           command: |
             docker load -i workspace/image.tar
-<<<<<<< HEAD
-=======
-            curl -k -u $TL_USER:$TL_PASS --output ./twistcli $TL_CONSOLE_URL/api/v1/util/twistcli
-            chmod a+x ./twistcli
-            ./twistcli images scan --details -address $TL_CONSOLE_URL -u $TL_USER -p $TL_PASS --vulnerability-threshold high --compliance-threshold high --only-fixed $MYREPO/$MYIMAGE:$TAG	
->>>>>>> 8799526f529181177047a3a4f0827638f0b16fa2
             echo $DOCKER_PW | docker login --username $DOCKER_USER --password-stdin docker.io
             docker push docker.io/$MYREPO/$MYIMAGE:$TAG
 workflows:
