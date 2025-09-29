@@ -1,2 +1,2 @@
-FROM ubuntu:latest
+FROM ubuntu:24.10
 RUN apt-get update && apt-get upgrade -y
